@@ -85,6 +85,16 @@ const POSDashboard = () => {
 
   const handleNewOrder = () => {
     if (cart.length === 0) return;
+    if (editingTabId) {
+      setOpenTabs((prev) =>
+        prev.map((t) =>
+          t.id === editingTabId ? { ...t, items: [...cart], total } : t
+        )
+      );
+      setEditingTabId(null);
+      setCart([]);
+      return;
+    }
     const newTab: OpenTab = {
       id: `tab${tabCounter}`,
       name: `Order #${tabCounter}`,
@@ -99,7 +109,23 @@ const POSDashboard = () => {
 
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
+    if (editingTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
+      setEditingTabId(null);
+    }
     setCart([]);
+  };
+
+  const handleTabAction = (tabId: string, action: 'cash' | 'credit' | 'add-items') => {
+    const tab = openTabs.find((t) => t.id === tabId);
+    if (!tab) return;
+    if (action === 'add-items') {
+      setCart([...tab.items]);
+      setEditingTabId(tabId);
+      setShowOpenTabs(false);
+    } else {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
+    }
   };
 
   const SUB_MENU = [
