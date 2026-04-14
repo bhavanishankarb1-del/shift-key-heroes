@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Banknote, Loader2 } from 'lucide-react';
+import { Banknote, Loader2, Zap } from 'lucide-react';
 
 interface CashReceivedModalProps {
   open: boolean;
@@ -22,7 +22,6 @@ const CashReceivedModal = ({ open, onClose, subtotal, onComplete }: CashReceived
 
   const handleFastCash = async () => {
     setProcessing(true);
-    // Simulate API calls (payment processing, receipt generation, inventory update)
     await new Promise((r) => setTimeout(r, 2000));
     setProcessing(false);
     onComplete();
@@ -76,8 +75,5 @@ const Row = ({ label, value }: { label: string; value: number }) => (
     <span className="text-foreground font-medium">${value.toFixed(2)}</span>
   </div>
 );
-
-// Need to import Zap
-import { Zap } from 'lucide-react';
 
 export default CashReceivedModal;
