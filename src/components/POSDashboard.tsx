@@ -278,8 +278,19 @@ const POSDashboard = () => {
             <>
               <div className="p-4 border-b border-border">
                 <h2 className="text-lg font-bold text-foreground">
-                  Cart {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
+                  {editingTabId
+                    ? `Editing: ${openTabs.find((t) => t.id === editingTabId)?.name}`
+                    : 'Cart'}{' '}
+                  {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
                 </h2>
+                {editingTabId && (
+                  <button
+                    onClick={() => { setEditingTabId(null); setCart([]); }}
+                    className="text-xs text-muted-foreground hover:text-foreground mt-1"
+                  >
+                    Cancel editing
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
