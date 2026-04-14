@@ -82,7 +82,21 @@ const POSDashboard = () => {
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
-  const handleCheckout = () => {
+  const handleNewOrder = () => {
+    if (cart.length === 0) return;
+    const newTab: OpenTab = {
+      id: `tab${tabCounter}`,
+      name: `Order #${tabCounter}`,
+      items: [...cart],
+      total,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setOpenTabs((prev) => [...prev, newTab]);
+    setTabCounter((c) => c + 1);
+    setCart([]);
+  };
+
+  const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
     setCart([]);
   };
