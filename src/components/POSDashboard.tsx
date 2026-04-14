@@ -203,7 +203,7 @@ const POSDashboard = () => {
             /* Open Tabs Panel */
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               <h2 className="text-lg font-bold text-foreground mb-2">Open Tabs</h2>
-              {DEMO_OPEN_TABS.map((tab) => (
+              {openTabs.map((tab) => (
                 <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-semibold text-foreground">{tab.name}</p>
@@ -222,6 +222,9 @@ const POSDashboard = () => {
                   </div>
                 </div>
               ))}
+              {openTabs.length === 0 && (
+                <p className="text-muted-foreground text-sm text-center mt-8">No open tabs</p>
+              )}
             </div>
           ) : (
             /* Cart Panel */
@@ -262,12 +265,30 @@ const POSDashboard = () => {
                   <span className="text-foreground">Total</span>
                   <span className="text-primary">${total.toFixed(2)}</span>
                 </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleCheckout('cash')}
+                    disabled={cart.length === 0}
+                    variant="outline"
+                    className="flex-1 h-12 gap-2 font-bold"
+                  >
+                    <Banknote className="w-5 h-5" /> Cash
+                  </Button>
+                  <Button
+                    onClick={() => handleCheckout('credit')}
+                    disabled={cart.length === 0}
+                    className="flex-1 h-12 gap-2 font-bold"
+                  >
+                    <CreditCard className="w-5 h-5" /> Credit
+                  </Button>
+                </div>
                 <Button
-                  onClick={handleCheckout}
+                  onClick={handleNewOrder}
                   disabled={cart.length === 0}
-                  className="w-full h-14 text-lg font-bold"
+                  variant="secondary"
+                  className="w-full h-10 gap-2 font-medium"
                 >
-                  Charge ${total.toFixed(2)}
+                  <Plus className="w-4 h-4" /> New Order
                 </Button>
               </div>
             </>
