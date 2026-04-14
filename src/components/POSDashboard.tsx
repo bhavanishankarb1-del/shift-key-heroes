@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import CashReceivedModal from '@/components/CashReceivedModal';
 interface Product {
   id: string;
   name: string;
@@ -55,6 +56,7 @@ const POSDashboard = () => {
   const [openTabs, setOpenTabs] = useState<OpenTab[]>(DEMO_OPEN_TABS);
   const [tabCounter, setTabCounter] = useState(4);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [showCashModal, setShowCashModal] = useState(false);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -109,11 +111,20 @@ const POSDashboard = () => {
 
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
+    if (method === 'cash') {
+      setShowCashModal(true);
+      return;
+    }
+    completeCheckout();
+  };
+
+  const completeCheckout = () => {
     if (editingTabId) {
       setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
       setEditingTabId(null);
     }
     setCart([]);
+    setShowCashModal(false);
   };
 
   const handleTabAction = (tabId: string, action: 'cash' | 'credit' | 'add-items') => {
@@ -353,6 +364,12 @@ const POSDashboard = () => {
           )}
         </div>
       </div>
+      <CashReceivedModal
+        open={showCashModal}
+        onClose={() => setShowCashModal(false)}
+        subtotal={total}
+        onComplete={completeCheckout}
+      />
     </div>
   );
 };
