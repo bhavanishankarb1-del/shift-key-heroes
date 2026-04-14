@@ -234,7 +234,27 @@ const POSDashboard = () => {
                 <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-semibold text-foreground">{tab.name}</p>
-                    <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'cash')}>
+                            <Banknote className="w-4 h-4 mr-2" /> Cash
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
+                            <CreditCard className="w-4 h-4 mr-2" /> Credit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
+                            <Plus className="w-4 h-4 mr-2" /> Add Items
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <div className="space-y-1">
                     {tab.items.map((item) => (
