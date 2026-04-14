@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote } from 'lucide-react';
+import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Product {
