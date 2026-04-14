@@ -54,6 +54,7 @@ const POSDashboard = () => {
   const [showOpenTabs, setShowOpenTabs] = useState(false);
   const [openTabs, setOpenTabs] = useState<OpenTab[]>(DEMO_OPEN_TABS);
   const [tabCounter, setTabCounter] = useState(4);
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
