@@ -346,7 +346,7 @@ const POSDashboard = () => {
                   variant="secondary"
                   className="w-full h-10 gap-2 font-medium"
                 >
-                  <Plus className="w-4 h-4" /> New Order
+                  <Plus className="w-4 h-4" /> {editingTabId ? 'Update Tab' : 'New Order'}
                 </Button>
               </div>
             </>
