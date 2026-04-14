@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote } from 'lucide-react';
+import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 interface Product {
   id: string;
   name: string;
@@ -54,6 +54,7 @@ const POSDashboard = () => {
   const [showOpenTabs, setShowOpenTabs] = useState(false);
   const [openTabs, setOpenTabs] = useState<OpenTab[]>(DEMO_OPEN_TABS);
   const [tabCounter, setTabCounter] = useState(4);
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -84,6 +85,16 @@ const POSDashboard = () => {
 
   const handleNewOrder = () => {
     if (cart.length === 0) return;
+    if (editingTabId) {
+      setOpenTabs((prev) =>
+        prev.map((t) =>
+          t.id === editingTabId ? { ...t, items: [...cart], total } : t
+        )
+      );
+      setEditingTabId(null);
+      setCart([]);
+      return;
+    }
     const newTab: OpenTab = {
       id: `tab${tabCounter}`,
       name: `Order #${tabCounter}`,
@@ -98,7 +109,23 @@ const POSDashboard = () => {
 
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
+    if (editingTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
+      setEditingTabId(null);
+    }
     setCart([]);
+  };
+
+  const handleTabAction = (tabId: string, action: 'cash' | 'credit' | 'add-items') => {
+    const tab = openTabs.find((t) => t.id === tabId);
+    if (!tab) return;
+    if (action === 'add-items') {
+      setCart([...tab.items]);
+      setEditingTabId(tabId);
+      setShowOpenTabs(false);
+    } else {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
+    }
   };
 
   const SUB_MENU = [
@@ -207,7 +234,27 @@ const POSDashboard = () => {
                 <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-semibold text-foreground">{tab.name}</p>
-                    <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'cash')}>
+                            <Banknote className="w-4 h-4 mr-2" /> Cash
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
+                            <CreditCard className="w-4 h-4 mr-2" /> Credit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
+                            <Plus className="w-4 h-4 mr-2" /> Add Items
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <div className="space-y-1">
                     {tab.items.map((item) => (
@@ -231,8 +278,19 @@ const POSDashboard = () => {
             <>
               <div className="p-4 border-b border-border">
                 <h2 className="text-lg font-bold text-foreground">
-                  Cart {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
+                  {editingTabId
+                    ? `Editing: ${openTabs.find((t) => t.id === editingTabId)?.name}`
+                    : 'Cart'}{' '}
+                  {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
                 </h2>
+                {editingTabId && (
+                  <button
+                    onClick={() => { setEditingTabId(null); setCart([]); }}
+                    className="text-xs text-muted-foreground hover:text-foreground mt-1"
+                  >
+                    Cancel editing
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -288,7 +346,7 @@ const POSDashboard = () => {
                   variant="secondary"
                   className="w-full h-10 gap-2 font-medium"
                 >
-                  <Plus className="w-4 h-4" /> New Order
+                  <Plus className="w-4 h-4" /> {editingTabId ? 'Update Tab' : 'New Order'}
                 </Button>
               </div>
             </>
