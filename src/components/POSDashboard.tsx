@@ -364,10 +364,6 @@ const POSDashboard = () => {
           )}
         </div>
       </div>
-    </div>
-  );
-};
-
       <CashReceivedModal
         open={showCashModal}
         onClose={() => setShowCashModal(false)}
