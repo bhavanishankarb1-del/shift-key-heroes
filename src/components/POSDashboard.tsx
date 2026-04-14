@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 interface Product {
   id: string;
   name: string;
