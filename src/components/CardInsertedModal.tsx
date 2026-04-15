@@ -119,6 +119,10 @@ const CardInsertedModal = ({
           <div className="space-y-4">
             <SignatureCanvas onSignatureChange={handleSignatureChange} />
 
+            <p className="text-[10px] text-muted-foreground leading-tight italic">
+              Your signature confirms your consent and the validity of all charges. You waive any right to contest these charges at a later date.
+            </p>
+
             <Button
               className="w-full"
               disabled={!signed}
