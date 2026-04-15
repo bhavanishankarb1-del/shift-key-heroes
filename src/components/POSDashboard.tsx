@@ -4,6 +4,10 @@ import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Data
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
+import TipModal from '@/components/TipModal';
+import CardInsertedModal from '@/components/CardInsertedModal';
+import ThankYouPopup from '@/components/ThankYouPopup';
+import DatafileModal from '@/components/DatafileModal';
 interface Product {
   id: string;
   name: string;
