@@ -413,6 +413,31 @@ const POSDashboard = () => {
         subtotal={total}
         onComplete={completeCheckout}
       />
+      <TipModal
+        open={showTipModal}
+        onClose={() => setShowTipModal(false)}
+        subtotal={creditCheckoutTotal}
+        onComplete={handleTipComplete}
+      />
+      <CardInsertedModal
+        open={showCardInserted}
+        onClose={() => setShowCardInserted(false)}
+        items={creditCheckoutItems}
+        subtotal={creditCheckoutTotal}
+        tipAmount={currentTipAmount}
+        staffName={staffName || ''}
+        merchantName={merchantName || ''}
+        onComplete={handleCardInsertedComplete}
+      />
+      <ThankYouPopup
+        open={showThankYou}
+        onClose={handleThankYouClose}
+      />
+      <DatafileModal
+        open={showDatafile}
+        onClose={handleDatafileComplete}
+        onComplete={handleDatafileComplete}
+      />
     </div>
   );
 };
