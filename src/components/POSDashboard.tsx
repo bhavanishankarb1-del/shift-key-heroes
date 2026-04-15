@@ -61,6 +61,13 @@ const POSDashboard = () => {
   const [tabCounter, setTabCounter] = useState(4);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [showCashModal, setShowCashModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [showCardInserted, setShowCardInserted] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [showDatafile, setShowDatafile] = useState(false);
+  const [currentTipAmount, setCurrentTipAmount] = useState(0);
+  const [creditCheckoutItems, setCreditCheckoutItems] = useState<CartItem[]>([]);
+  const [creditCheckoutTotal, setCreditCheckoutTotal] = useState(0);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
