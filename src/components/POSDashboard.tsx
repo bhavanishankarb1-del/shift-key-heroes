@@ -126,7 +126,39 @@ const POSDashboard = () => {
       setShowCashModal(true);
       return;
     }
-    completeCheckout();
+    // Credit flow: save cart state for receipt, show tip modal
+    setCreditCheckoutItems([...cart]);
+    setCreditCheckoutTotal(total);
+    setShowTipModal(true);
+  };
+
+  const handleTipComplete = () => {
+    // Tip selected & processed → show card inserted / receipt modal
+    setShowTipModal(false);
+    setShowCardInserted(true);
+  };
+
+  const handleCardInsertedComplete = () => {
+    setShowCardInserted(false);
+    setShowThankYou(true);
+  };
+
+  const handleThankYouClose = () => {
+    setShowThankYou(false);
+    setShowDatafile(true);
+  };
+
+  const handleDatafileComplete = () => {
+    setShowDatafile(false);
+    // Complete the transaction
+    if (editingTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
+      setEditingTabId(null);
+    }
+    setCart([]);
+    setCreditCheckoutItems([]);
+    setCreditCheckoutTotal(0);
+    setCurrentTipAmount(0);
   };
 
   const completeCheckout = () => {
