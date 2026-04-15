@@ -4,6 +4,10 @@ import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Data
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
+import TipModal from '@/components/TipModal';
+import CardInsertedModal from '@/components/CardInsertedModal';
+import ThankYouPopup from '@/components/ThankYouPopup';
+import DatafileModal from '@/components/DatafileModal';
 interface Product {
   id: string;
   name: string;
@@ -57,6 +61,13 @@ const POSDashboard = () => {
   const [tabCounter, setTabCounter] = useState(4);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [showCashModal, setShowCashModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [showCardInserted, setShowCardInserted] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [showDatafile, setShowDatafile] = useState(false);
+  const [currentTipAmount, setCurrentTipAmount] = useState(0);
+  const [creditCheckoutItems, setCreditCheckoutItems] = useState<CartItem[]>([]);
+  const [creditCheckoutTotal, setCreditCheckoutTotal] = useState(0);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -115,7 +126,39 @@ const POSDashboard = () => {
       setShowCashModal(true);
       return;
     }
-    completeCheckout();
+    // Credit flow: save cart state for receipt, show tip modal
+    setCreditCheckoutItems([...cart]);
+    setCreditCheckoutTotal(total);
+    setShowTipModal(true);
+  };
+
+  const handleTipComplete = () => {
+    // Tip selected & processed → show card inserted / receipt modal
+    setShowTipModal(false);
+    setShowCardInserted(true);
+  };
+
+  const handleCardInsertedComplete = () => {
+    setShowCardInserted(false);
+    setShowThankYou(true);
+  };
+
+  const handleThankYouClose = () => {
+    setShowThankYou(false);
+    setShowDatafile(true);
+  };
+
+  const handleDatafileComplete = () => {
+    setShowDatafile(false);
+    // Complete the transaction
+    if (editingTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
+      setEditingTabId(null);
+    }
+    setCart([]);
+    setCreditCheckoutItems([]);
+    setCreditCheckoutTotal(0);
+    setCurrentTipAmount(0);
   };
 
   const completeCheckout = () => {
@@ -369,6 +412,31 @@ const POSDashboard = () => {
         onClose={() => setShowCashModal(false)}
         subtotal={total}
         onComplete={completeCheckout}
+      />
+      <TipModal
+        open={showTipModal}
+        onClose={() => setShowTipModal(false)}
+        subtotal={creditCheckoutTotal}
+        onComplete={handleTipComplete}
+      />
+      <CardInsertedModal
+        open={showCardInserted}
+        onClose={() => setShowCardInserted(false)}
+        items={creditCheckoutItems}
+        subtotal={creditCheckoutTotal}
+        tipAmount={currentTipAmount}
+        staffName={staffName || ''}
+        merchantName={merchantName || ''}
+        onComplete={handleCardInsertedComplete}
+      />
+      <ThankYouPopup
+        open={showThankYou}
+        onClose={handleThankYouClose}
+      />
+      <DatafileModal
+        open={showDatafile}
+        onClose={handleDatafileComplete}
+        onComplete={handleDatafileComplete}
       />
     </div>
   );
