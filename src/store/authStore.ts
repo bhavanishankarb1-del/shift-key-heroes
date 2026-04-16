@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ error: 'Invalid password' });
       return false;
     }
-    set({ merchantName: found.name, step: 'clockin', error: null });
+    set({ merchantName: found.name, step: 'stafflogin', error: null });
     return true;
   },
 
