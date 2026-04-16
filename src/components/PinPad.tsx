@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Delete } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface PinPadProps {
   onSubmit: (pin: string) => void;
@@ -7,11 +8,11 @@ interface PinPadProps {
   subtitle?: string;
   error?: string | null;
   pinLength?: number;
+  sideActions?: ReactNode;
 }
 
-const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4 }: PinPadProps) => {
+const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4, sideActions }: PinPadProps) => {
   const [pin, setPin] = useState('');
-  const [shaking, setShaking] = useState(false);
 
   const handleKey = useCallback((key: string) => {
     setPin((prev) => {
@@ -31,9 +32,6 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4 }: PinPadProps
   const handleClear = useCallback(() => {
     setPin('');
   }, []);
-
-  // Trigger shake on error
-  const shouldShake = error && pin.length === 0;
 
   return (
     <div className="flex flex-col items-center gap-6 animate-fade-in">
@@ -60,43 +58,51 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4 }: PinPadProps
         <p className="text-destructive text-sm font-medium -mt-4">{error}</p>
       )}
 
-      {/* Numpad */}
-      <div className="grid grid-cols-3 gap-3">
-        {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((key) => (
+      {/* Numpad + side actions */}
+      <div className="flex items-start gap-4">
+        <div className="grid grid-cols-3 gap-3">
+          {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((key) => (
+            <button
+              key={key}
+              onClick={() => handleKey(key)}
+              className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover 
+                         text-foreground text-2xl font-semibold transition-all duration-150 
+                         active:scale-95 select-none"
+            >
+              {key}
+            </button>
+          ))}
           <button
-            key={key}
-            onClick={() => handleKey(key)}
+            onClick={handleClear}
+            className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover
+                       text-muted-foreground text-sm font-medium transition-all duration-150 
+                       active:scale-95 select-none"
+          >
+            Clear
+          </button>
+          <button
+            onClick={() => handleKey('0')}
             className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover 
                        text-foreground text-2xl font-semibold transition-all duration-150 
                        active:scale-95 select-none"
           >
-            {key}
+            0
           </button>
-        ))}
-        <button
-          onClick={handleClear}
-          className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover
-                     text-muted-foreground text-sm font-medium transition-all duration-150 
-                     active:scale-95 select-none"
-        >
-          Clear
-        </button>
-        <button
-          onClick={() => handleKey('0')}
-          className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover 
-                     text-foreground text-2xl font-semibold transition-all duration-150 
-                     active:scale-95 select-none"
-        >
-          0
-        </button>
-        <button
-          onClick={handleDelete}
-          className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover
-                     text-muted-foreground transition-all duration-150 active:scale-95 
-                     select-none flex items-center justify-center"
-        >
-          <Delete className="w-6 h-6" />
-        </button>
+          <button
+            onClick={handleDelete}
+            className="w-20 h-20 rounded-2xl bg-pos-pin-key hover:bg-pos-pin-key-hover
+                       text-muted-foreground transition-all duration-150 active:scale-95 
+                       select-none flex items-center justify-center"
+          >
+            <Delete className="w-6 h-6" />
+          </button>
+        </div>
+
+        {sideActions && (
+          <div className="flex flex-col gap-3 pt-0">
+            {sideActions}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -48,7 +48,6 @@ const StaffLogin = () => {
     setBreakMessage(null);
   };
 
-  // Success message overlay
   if (breakMessage) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
@@ -75,7 +74,7 @@ const StaffLogin = () => {
     );
   }
 
-  // Break sub-mode (shared across both steps)
+  // Break sub-mode
   if (subMode === 'break') {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
@@ -85,18 +84,24 @@ const StaffLogin = () => {
           title="Break In / Out"
           subtitle="Enter your PIN to Break In or Break Out"
           error={error}
+          sideActions={
+            <Button
+              onClick={handleBackFromBreak}
+              variant="outline"
+              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+            >
+              ← Back
+            </Button>
+          }
         />
-        <button
-          onClick={handleBackFromBreak}
-          className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          ← Back
-        </button>
+        <p className="mt-4 text-muted-foreground/60 text-xs">
+          Demo PINs: 1234, 5678, 0000
+        </p>
       </div>
     );
   }
 
-  // Clock In screen (step === 'clockin')
+  // Clock In screen
   if (step === 'clockin') {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
@@ -106,25 +111,27 @@ const StaffLogin = () => {
           title="Clock In"
           subtitle="Enter your staff PIN to clock in"
           error={error}
+          sideActions={
+            <>
+              <Button
+                onClick={() => goToStaffLogin()}
+                variant="outline"
+                className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+              >
+                <LogIn className="w-5 h-5" />
+                Login
+              </Button>
+              <Button
+                onClick={() => setSubMode('break')}
+                variant="outline"
+                className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+              >
+                <Coffee className="w-5 h-5" />
+                Break
+              </Button>
+            </>
+          }
         />
-        <div className="mt-6 flex items-center gap-3">
-          <Button
-            onClick={() => goToStaffLogin()}
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-          >
-            <LogIn className="w-4 h-4" /> Login
-          </Button>
-          <Button
-            onClick={() => setSubMode('break')}
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-          >
-            <Coffee className="w-4 h-4" /> Break
-          </Button>
-        </div>
         <p className="mt-4 text-muted-foreground/60 text-xs">
           Demo PINs: 1234, 5678, 0000
         </p>
@@ -132,7 +139,7 @@ const StaffLogin = () => {
     );
   }
 
-  // Staff Login screen (step === 'stafflogin')
+  // Staff Login screen
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
       <div className="mb-4 text-muted-foreground text-sm">{merchantName}</div>
@@ -141,17 +148,27 @@ const StaffLogin = () => {
         title="Staff Login"
         subtitle="Enter your PIN to access the POS"
         error={error}
+        sideActions={
+          <>
+            <Button
+              onClick={() => goToClockIn()}
+              variant="outline"
+              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+            >
+              <Clock className="w-5 h-5" />
+              Clock In
+            </Button>
+            <Button
+              onClick={() => setSubMode('break')}
+              variant="outline"
+              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+            >
+              <Coffee className="w-5 h-5" />
+              Break
+            </Button>
+          </>
+        }
       />
-      <div className="mt-6 flex items-center gap-3">
-        <Button
-          onClick={() => goToClockIn()}
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-        >
-          <Clock className="w-4 h-4" /> Clock In
-        </Button>
-      </div>
       <p className="mt-4 text-muted-foreground/60 text-xs">
         Demo PINs: 1234, 5678, 0000
       </p>
