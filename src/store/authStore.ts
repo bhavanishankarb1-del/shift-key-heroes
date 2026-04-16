@@ -24,6 +24,7 @@ interface AuthState {
   staffName: string | null;
   staffRole: string | null;
   clockedIn: boolean;
+  clockedInStaff: string[];
   error: string | null;
   breakRecords: BreakRecord[];
   loginMerchant: (name: string, password: string) => boolean;
@@ -32,6 +33,8 @@ interface AuthState {
   staffLogout: () => void;
   toggleBreak: (pin: string) => { success: boolean; message: string; breakingIn: boolean };
   isOnBreak: (staffName: string) => boolean;
+  goToClockIn: () => void;
+  goToStaffLogin: () => void;
   clearError: () => void;
 }
 
@@ -41,6 +44,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   staffName: null,
   staffRole: null,
   clockedIn: false,
+  clockedInStaff: [],
   error: null,
   breakRecords: [],
 
@@ -56,24 +60,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ error: 'Invalid password' });
       return false;
     }
-    set({ merchantName: found.name, step: 'stafflogin', error: null });
+    set({ merchantName: found.name, step: 'clockin', error: null });
     return true;
   },
 
   clockIn: (pin: string) => {
     const staff = DEMO_STAFF.find((s) => s.pin === pin);
-    if (staff) {
-      set({
-        staffName: staff.name,
-        staffRole: staff.role,
-        clockedIn: true,
-        step: 'stafflogin',
-        error: null,
-      });
-      return true;
+    if (!staff) {
+      set({ error: 'Invalid PIN' });
+      return false;
     }
-    set({ error: 'Invalid PIN' });
-    return false;
+    const { clockedInStaff } = get();
+    if (clockedInStaff.includes(staff.name)) {
+      set({ error: 'Staff already clocked in, login to proceed' });
+      return false;
+    }
+    set({
+      clockedInStaff: [...clockedInStaff, staff.name],
+      error: null,
+    });
+    return true;
   },
 
   staffLogin: (pin: string) => {
@@ -82,7 +88,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ error: 'Invalid PIN' });
       return false;
     }
-    // Check if staff is on break
     const { breakRecords } = get();
     const record = breakRecords.find((r) => r.staffName === staff.name);
     if (record && record.onBreak) {
@@ -94,7 +99,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   staffLogout: () => {
-    // Go back to staff login screen, keep merchant info
     set({
       step: 'stafflogin',
       staffName: null,
@@ -113,7 +117,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const record = breakRecords.find((r) => r.staffName === staff.name);
     
     if (record && record.onBreak) {
-      // Break out
       set({
         breakRecords: breakRecords.map((r) =>
           r.staffName === staff.name ? { ...r, onBreak: false } : r
@@ -122,7 +125,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       return { success: true, message: `${staff.name} has Broken Out successfully!`, breakingIn: false };
     } else {
-      // Break in
       const newRecords = record
         ? breakRecords.map((r) =>
             r.staffName === staff.name ? { ...r, onBreak: true } : r
@@ -138,6 +140,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const record = breakRecords.find((r) => r.staffName === staffName);
     return record ? record.onBreak : false;
   },
+
+  goToClockIn: () => set({ step: 'clockin', error: null }),
+  goToStaffLogin: () => set({ step: 'stafflogin', error: null }),
 
   clearError: () => set({ error: null }),
 }));
