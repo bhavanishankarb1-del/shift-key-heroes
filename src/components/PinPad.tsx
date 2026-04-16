@@ -36,7 +36,7 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4 }: PinPadProps
   const shouldShake = error && pin.length === 0;
 
   return (
-    <div className="flex flex-col items-center gap-8 animate-fade-in">
+    <div className="flex flex-col items-center gap-6 animate-fade-in">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold text-foreground">{title}</h1>
         {subtitle && <p className="text-muted-foreground text-sm">{subtitle}</p>}
