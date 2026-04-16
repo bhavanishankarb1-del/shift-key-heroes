@@ -1,6 +1,5 @@
 import { useAuthStore } from '@/store/authStore';
 import MerchantLogin from '@/components/MerchantLogin';
-import ClockIn from '@/components/ClockIn';
 import StaffLogin from '@/components/StaffLogin';
 import POSDashboard from '@/components/POSDashboard';
 
@@ -11,7 +10,6 @@ const Index = () => {
     case 'merchant':
       return <MerchantLogin />;
     case 'clockin':
-      return <ClockIn />;
     case 'stafflogin':
       return <StaffLogin />;
     case 'dashboard':

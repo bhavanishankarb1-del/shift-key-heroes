@@ -52,7 +52,7 @@ const DEMO_OPEN_TABS: OpenTab[] = [
 ];
 
 const POSDashboard = () => {
-  const { merchantName, staffName, staffRole, logout } = useAuthStore();
+  const { merchantName, staffName, staffRole, staffLogout } = useAuthStore();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -201,7 +201,7 @@ const POSDashboard = () => {
             <p className="text-xs text-muted-foreground">{staffName} · {staffRole}</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-destructive">
+        <Button variant="ghost" size="sm" onClick={staffLogout} className="text-muted-foreground hover:text-destructive">
           <LogOut className="w-4 h-4 mr-1" /> Logout
         </Button>
       </header>
