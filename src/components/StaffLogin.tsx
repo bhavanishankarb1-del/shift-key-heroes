@@ -15,7 +15,7 @@ const StaffLogin = () => {
     if (success) {
       setClockInMessage('Clocked in successfully!');
       setTimeout(() => {
-        setCockInMessage(null);
+        setClockInMessage(null);
       }, 2000);
     } else {
       setTimeout(() => clearError(), 2000);
