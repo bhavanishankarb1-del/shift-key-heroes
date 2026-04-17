@@ -55,10 +55,7 @@ const TipModal = ({ open, onClose, subtotal, onComplete }: TipModalProps) => {
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-md">
         {processing ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
-            <p className="text-sm text-muted-foreground">Processing credit payment…</p>
-          </div>
+          <FoodDrinkLoader message="Processing credit payment…" />
         ) : (
           <>
             <DialogHeader>
