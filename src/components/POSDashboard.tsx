@@ -222,6 +222,8 @@ const POSDashboard = () => {
 
   const handleDatafileComplete = () => {
     setShowDatafile(false);
+    // Settle pre-auth (release remainder) on credit close
+    completeCreditWithPreAuth();
     // Complete the transaction
     if (editingTabId) {
       setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
@@ -281,11 +283,25 @@ const POSDashboard = () => {
       {/* Sub Menu */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-card/50">
         {SUB_MENU.map((item) => (
-          <Button key={item.label} variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button
+            key={item.label}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={() => {
+              if (item.label === 'Pre-Authorization') handleOpenPreAuth();
+            }}
+          >
             <item.icon className="w-3.5 h-3.5" />
             {item.label}
           </Button>
         ))}
+        {activeHold && (
+          <div className="ml-auto flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Pre-Auth Hold: ${activeHold.amount.toFixed(2)} · ****{activeHold.cardLast4}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
