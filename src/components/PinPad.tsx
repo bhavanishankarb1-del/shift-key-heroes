@@ -58,8 +58,8 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4, sideActions }
         <p className="text-destructive text-sm font-medium -mt-4">{error}</p>
       )}
 
-      {/* Numpad centered, side actions floated right */}
-      <div className="relative w-full flex justify-center">
+      {/* Numpad with side actions beside it */}
+      <div className="flex items-start justify-center gap-6">
         <div className="grid grid-cols-3 gap-3">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((key) => (
             <button
@@ -99,7 +99,7 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4, sideActions }
         </div>
 
         {sideActions && (
-          <div className="absolute left-full ml-6 top-0 flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             {sideActions}
           </div>
         )}
