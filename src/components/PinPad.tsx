@@ -99,7 +99,7 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4, sideActions }
         </div>
 
         {sideActions && (
-          <div className="flex flex-col gap-3 pt-0">
+          <div className="absolute left-full ml-6 top-0 flex flex-col gap-3">
             {sideActions}
           </div>
         )}
