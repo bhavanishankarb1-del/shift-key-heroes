@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2, SplitSquareHorizontal } from 'lucide-react';
+import { CreditCard, SplitSquareHorizontal } from 'lucide-react';
+import FoodDrinkLoader from '@/components/FoodDrinkLoader';
 
 interface TipModalProps {
   open: boolean;

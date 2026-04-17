@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Banknote, Loader2, Zap } from 'lucide-react';
+import { Banknote, Zap } from 'lucide-react';
+import FoodDrinkLoader from '@/components/FoodDrinkLoader';
 
 interface CashReceivedModalProps {
   open: boolean;
@@ -31,10 +32,7 @@ const CashReceivedModal = ({ open, onClose, subtotal, onComplete }: CashReceived
     <Dialog open={open} onOpenChange={(v) => !v && !processing && onClose()}>
       <DialogContent className="sm:max-w-md">
         {processing ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
-            <p className="text-sm text-muted-foreground">Processing payment…</p>
-          </div>
+          <FoodDrinkLoader message="Processing payment…" />
         ) : (
           <>
             <DialogHeader>

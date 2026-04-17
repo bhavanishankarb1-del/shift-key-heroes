@@ -6,41 +6,47 @@
 
 @layer base {
   :root {
-    --background: 220 20% 10%;
-    --foreground: 210 20% 95%;
-    --card: 220 18% 14%;
-    --card-foreground: 210 20% 95%;
-    --popover: 220 18% 14%;
-    --popover-foreground: 210 20% 95%;
-    --primary: 152 60% 48%;
-    --primary-foreground: 220 20% 10%;
-    --secondary: 220 16% 20%;
-    --secondary-foreground: 210 20% 85%;
-    --muted: 220 14% 18%;
-    --muted-foreground: 215 12% 55%;
-    --accent: 220 16% 22%;
-    --accent-foreground: 210 20% 90%;
-    --destructive: 0 72% 55%;
+    /* Club / nightlife dark theme — deep navy with electric blue accent */
+    --background: 222 45% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 40% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 210 100% 60%;
+    --primary-foreground: 222 45% 7%;
+    --primary-glow: 195 100% 65%;
+    --secondary: 222 35% 17%;
+    --secondary-foreground: 210 30% 90%;
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 18% 62%;
+    --accent: 280 80% 60%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 350 85% 58%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 14% 20%;
-    --input: 220 14% 22%;
-    --ring: 152 60% 48%;
+    --border: 222 30% 18%;
+    --input: 222 30% 18%;
+    --ring: 210 100% 60%;
     --radius: 0.75rem;
-    --pos-surface: 220 18% 12%;
-    --pos-surface-hover: 220 16% 16%;
-    --pos-pin-key: 220 16% 18%;
-    --pos-pin-key-hover: 220 16% 24%;
-    --pos-success: 152 60% 48%;
+    --pos-surface: 222 42% 9%;
+    --pos-surface-hover: 222 38% 13%;
+    --pos-pin-key: 222 35% 16%;
+    --pos-pin-key-hover: 222 35% 22%;
+    --pos-success: 152 65% 50%;
     --pos-warning: 38 92% 55%;
-    --pos-info: 210 90% 58%;
-    --sidebar-background: 220 20% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 152 60% 48%;
-    --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 220 16% 16%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 220 14% 18%;
-    --sidebar-ring: 152 60% 48%;
+    --pos-info: 210 100% 60%;
+    --sidebar-background: 222 48% 5%;
+    --sidebar-foreground: 210 30% 88%;
+    --sidebar-primary: 210 100% 60%;
+    --sidebar-primary-foreground: 222 45% 7%;
+    --sidebar-accent: 222 35% 14%;
+    --sidebar-accent-foreground: 210 40% 92%;
+    --sidebar-border: 222 30% 16%;
+    --sidebar-ring: 210 100% 60%;
+
+    --gradient-club: linear-gradient(135deg, hsl(210 100% 60%), hsl(280 80% 60%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(210 100% 60% / 0.18), transparent 60%);
+    --shadow-glow: 0 0 40px hsl(210 100% 60% / 0.35);
   }
 }
 
