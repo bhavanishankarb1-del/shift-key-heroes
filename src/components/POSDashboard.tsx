@@ -526,6 +526,30 @@ const POSDashboard = () => {
         onClose={handleDatafileComplete}
         onComplete={handleDatafileComplete}
       />
+
+      {/* Pre-Authorization flow */}
+      <PreAuthAmountModal
+        open={showPreAuthAmount}
+        onCancel={() => setShowPreAuthAmount(false)}
+        onConfirm={handlePreAuthAmountConfirm}
+      />
+      <PreAuthCardModal
+        open={showPreAuthCard}
+        amount={preAuthAmount}
+        onClose={() => setShowPreAuthCard(false)}
+        onAuthorized={handlePreAuthAuthorized}
+      />
+      <PreAuthSuccessModal
+        open={showPreAuthSuccess}
+        hold={activeHold}
+        onClose={handlePreAuthSuccessClose}
+      />
+      <VoidPreAuthConfirmModal
+        open={showVoidConfirm}
+        hold={activeHold}
+        onCancel={() => setShowVoidConfirm(false)}
+        onConfirm={handleVoidConfirm}
+      />
     </div>
   );
 };
