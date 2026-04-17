@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
+import { usePreAuthStore } from '@/store/preAuthStore';
+import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
@@ -8,6 +9,11 @@ import TipModal from '@/components/TipModal';
 import CardInsertedModal from '@/components/CardInsertedModal';
 import ThankYouPopup from '@/components/ThankYouPopup';
 import DatafileModal from '@/components/DatafileModal';
+import PreAuthAmountModal from '@/components/PreAuthAmountModal';
+import PreAuthCardModal from '@/components/PreAuthCardModal';
+import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
+import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
+import { toast } from 'sonner';
 interface Product {
   id: string;
   name: string;
@@ -53,6 +59,7 @@ const DEMO_OPEN_TABS: OpenTab[] = [
 
 const POSDashboard = () => {
   const { merchantName, staffName, staffRole, staffLogout } = useAuthStore();
+  const { activeHold, setHold, voidHold, clearHold } = usePreAuthStore();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -68,6 +75,13 @@ const POSDashboard = () => {
   const [currentTipAmount, setCurrentTipAmount] = useState(0);
   const [creditCheckoutItems, setCreditCheckoutItems] = useState<CartItem[]>([]);
   const [creditCheckoutTotal, setCreditCheckoutTotal] = useState(0);
+
+  // Pre-Authorization flow state
+  const [showPreAuthAmount, setShowPreAuthAmount] = useState(false);
+  const [showPreAuthCard, setShowPreAuthCard] = useState(false);
+  const [showPreAuthSuccess, setShowPreAuthSuccess] = useState(false);
+  const [preAuthAmount, setPreAuthAmount] = useState(0);
+  const [showVoidConfirm, setShowVoidConfirm] = useState(false);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -123,6 +137,11 @@ const POSDashboard = () => {
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
     if (method === 'cash') {
+      // If a pre-auth hold is active on this session, confirm void first
+      if (activeHold) {
+        setShowVoidConfirm(true);
+        return;
+      }
       setShowCashModal(true);
       return;
     }
@@ -130,6 +149,59 @@ const POSDashboard = () => {
     setCreditCheckoutItems([...cart]);
     setCreditCheckoutTotal(total);
     setShowTipModal(true);
+  };
+
+  // ----- Pre-Authorization handlers -----
+  const handleOpenPreAuth = () => {
+    if (activeHold) {
+      toast.info(`Active pre-auth of $${activeHold.amount.toFixed(2)} already on file.`);
+      return;
+    }
+    setShowPreAuthAmount(true);
+  };
+
+  const handlePreAuthAmountConfirm = (amount: number) => {
+    setPreAuthAmount(amount);
+    setShowPreAuthAmount(false);
+    setShowPreAuthCard(true);
+  };
+
+  const handlePreAuthAuthorized = (cardLast4: string, authCode: string) => {
+    const hold = {
+      id: `PA-${Date.now().toString(36).toUpperCase()}`,
+      amount: preAuthAmount,
+      cardLast4,
+      authCode,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setHold(hold);
+    setShowPreAuthCard(false);
+    setShowPreAuthSuccess(true);
+  };
+
+  const handlePreAuthSuccessClose = () => {
+    setShowPreAuthSuccess(false);
+    setPreAuthAmount(0);
+  };
+
+  const handleVoidConfirm = () => {
+    voidHold();
+    setShowVoidConfirm(false);
+    toast.success('Pre-authorization voided. Proceeding with cash.');
+    setShowCashModal(true);
+  };
+
+  // Credit completion: if a pre-auth covers it, "release remainder" instead
+  const completeCreditWithPreAuth = () => {
+    if (activeHold) {
+      const remainder = activeHold.amount - (creditCheckoutTotal * 1.08 + currentTipAmount);
+      if (remainder > 0) {
+        toast.success(`Pre-auth settled. $${remainder.toFixed(2)} released back to customer.`);
+      } else {
+        toast.success('Pre-auth settled in full.');
+      }
+      clearHold();
+    }
   };
 
   const handleTipComplete = () => {
@@ -150,6 +222,8 @@ const POSDashboard = () => {
 
   const handleDatafileComplete = () => {
     setShowDatafile(false);
+    // Settle pre-auth (release remainder) on credit close
+    completeCreditWithPreAuth();
     // Complete the transaction
     if (editingTabId) {
       setOpenTabs((prev) => prev.filter((t) => t.id !== editingTabId));
@@ -209,11 +283,25 @@ const POSDashboard = () => {
       {/* Sub Menu */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-card/50">
         {SUB_MENU.map((item) => (
-          <Button key={item.label} variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button
+            key={item.label}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={() => {
+              if (item.label === 'Pre-Authorization') handleOpenPreAuth();
+            }}
+          >
             <item.icon className="w-3.5 h-3.5" />
             {item.label}
           </Button>
         ))}
+        {activeHold && (
+          <div className="ml-auto flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Pre-Auth Hold: ${activeHold.amount.toFixed(2)} · ****{activeHold.cardLast4}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -437,6 +525,30 @@ const POSDashboard = () => {
         open={showDatafile}
         onClose={handleDatafileComplete}
         onComplete={handleDatafileComplete}
+      />
+
+      {/* Pre-Authorization flow */}
+      <PreAuthAmountModal
+        open={showPreAuthAmount}
+        onCancel={() => setShowPreAuthAmount(false)}
+        onConfirm={handlePreAuthAmountConfirm}
+      />
+      <PreAuthCardModal
+        open={showPreAuthCard}
+        amount={preAuthAmount}
+        onClose={() => setShowPreAuthCard(false)}
+        onAuthorized={handlePreAuthAuthorized}
+      />
+      <PreAuthSuccessModal
+        open={showPreAuthSuccess}
+        hold={activeHold}
+        onClose={handlePreAuthSuccessClose}
+      />
+      <VoidPreAuthConfirmModal
+        open={showVoidConfirm}
+        hold={activeHold}
+        onCancel={() => setShowVoidConfirm(false)}
+        onConfirm={handleVoidConfirm}
       />
     </div>
   );
