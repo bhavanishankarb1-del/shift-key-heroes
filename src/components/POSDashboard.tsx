@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown } from 'lucide-react';
+import { usePreAuthStore } from '@/store/preAuthStore';
+import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
@@ -8,6 +9,11 @@ import TipModal from '@/components/TipModal';
 import CardInsertedModal from '@/components/CardInsertedModal';
 import ThankYouPopup from '@/components/ThankYouPopup';
 import DatafileModal from '@/components/DatafileModal';
+import PreAuthAmountModal from '@/components/PreAuthAmountModal';
+import PreAuthCardModal from '@/components/PreAuthCardModal';
+import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
+import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
+import { toast } from 'sonner';
 interface Product {
   id: string;
   name: string;
