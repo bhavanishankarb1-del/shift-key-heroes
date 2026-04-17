@@ -59,6 +59,7 @@ const DEMO_OPEN_TABS: OpenTab[] = [
 
 const POSDashboard = () => {
   const { merchantName, staffName, staffRole, staffLogout } = useAuthStore();
+  const { activeHold, setHold, voidHold, clearHold } = usePreAuthStore();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -74,6 +75,13 @@ const POSDashboard = () => {
   const [currentTipAmount, setCurrentTipAmount] = useState(0);
   const [creditCheckoutItems, setCreditCheckoutItems] = useState<CartItem[]>([]);
   const [creditCheckoutTotal, setCreditCheckoutTotal] = useState(0);
+
+  // Pre-Authorization flow state
+  const [showPreAuthAmount, setShowPreAuthAmount] = useState(false);
+  const [showPreAuthCard, setShowPreAuthCard] = useState(false);
+  const [showPreAuthSuccess, setShowPreAuthSuccess] = useState(false);
+  const [preAuthAmount, setPreAuthAmount] = useState(0);
+  const [showVoidConfirm, setShowVoidConfirm] = useState(false);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
