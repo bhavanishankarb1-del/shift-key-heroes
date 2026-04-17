@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Delete } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -32,6 +32,13 @@ const PinPad = ({ onSubmit, title, subtitle, error, pinLength = 4, sideActions }
   const handleClear = useCallback(() => {
     setPin('');
   }, []);
+
+  // Clear PIN whenever an error appears (e.g., wrong PIN entered)
+  useEffect(() => {
+    if (error) {
+      setPin('');
+    }
+  }, [error]);
 
   return (
     <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
