@@ -16,7 +16,8 @@ const StaffLogin = () => {
       setClockInMessage('Clocked in successfully!');
       setTimeout(() => {
         setClockInMessage(null);
-      }, 2000);
+        goToStaffLogin();
+      }, 1500);
     } else {
       setTimeout(() => clearError(), 2000);
     }
@@ -48,9 +49,19 @@ const StaffLogin = () => {
     setBreakMessage(null);
   };
 
+  const MerchantBadge = () => (
+    <div className="absolute top-4 left-4 text-muted-foreground text-sm font-medium flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-primary" />
+      {merchantName}
+    </div>
+  );
+
+  const sideButtonClass = "h-20 w-40 rounded-2xl flex flex-row items-center justify-center gap-2 text-sm font-semibold";
+
   if (breakMessage) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
+      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden relative">
+        <MerchantBadge />
         <div className="flex flex-col items-center gap-4 animate-fade-in">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <CheckCircle className="w-8 h-8 text-primary" />
@@ -63,7 +74,8 @@ const StaffLogin = () => {
 
   if (clockInMessage) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
+      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden relative">
+        <MerchantBadge />
         <div className="flex flex-col items-center gap-4 animate-fade-in">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <CheckCircle className="w-8 h-8 text-primary" />
@@ -77,8 +89,8 @@ const StaffLogin = () => {
   // Break sub-mode
   if (subMode === 'break') {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
-        <div className="mb-4 text-muted-foreground text-sm">{merchantName}</div>
+      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden relative">
+        <MerchantBadge />
         <PinPad
           onSubmit={handleBreak}
           title="Break In / Out"
@@ -88,7 +100,7 @@ const StaffLogin = () => {
             <Button
               onClick={handleBackFromBreak}
               variant="outline"
-              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+              className={sideButtonClass}
             >
               ← Back
             </Button>
@@ -104,8 +116,8 @@ const StaffLogin = () => {
   // Clock In screen
   if (step === 'clockin') {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
-        <div className="mb-4 text-muted-foreground text-sm">{merchantName}</div>
+      <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden relative">
+        <MerchantBadge />
         <PinPad
           onSubmit={handleClockIn}
           title="Clock In"
@@ -116,7 +128,7 @@ const StaffLogin = () => {
               <Button
                 onClick={() => goToStaffLogin()}
                 variant="outline"
-                className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+                className={sideButtonClass}
               >
                 <LogIn className="w-5 h-5" />
                 Login
@@ -124,7 +136,7 @@ const StaffLogin = () => {
               <Button
                 onClick={() => setSubMode('break')}
                 variant="outline"
-                className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+                className={sideButtonClass}
               >
                 <Coffee className="w-5 h-5" />
                 Break
@@ -141,8 +153,8 @@ const StaffLogin = () => {
 
   // Staff Login screen
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden">
-      <div className="mb-4 text-muted-foreground text-sm">{merchantName}</div>
+    <div className="h-screen flex flex-col items-center justify-center bg-background p-4 overflow-hidden relative">
+      <MerchantBadge />
       <PinPad
         onSubmit={handleLogin}
         title="Staff Login"
@@ -153,7 +165,7 @@ const StaffLogin = () => {
             <Button
               onClick={() => goToClockIn()}
               variant="outline"
-              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+              className={sideButtonClass}
             >
               <Clock className="w-5 h-5" />
               Clock In
@@ -161,7 +173,7 @@ const StaffLogin = () => {
             <Button
               onClick={() => setSubMode('break')}
               variant="outline"
-              className="h-20 w-20 rounded-2xl flex flex-col gap-1 text-xs font-semibold"
+              className={sideButtonClass}
             >
               <Coffee className="w-5 h-5" />
               Break
