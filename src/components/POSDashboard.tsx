@@ -137,6 +137,11 @@ const POSDashboard = () => {
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
     if (method === 'cash') {
+      // If a pre-auth hold is active on this session, confirm void first
+      if (activeHold) {
+        setShowVoidConfirm(true);
+        return;
+      }
       setShowCashModal(true);
       return;
     }
@@ -144,6 +149,59 @@ const POSDashboard = () => {
     setCreditCheckoutItems([...cart]);
     setCreditCheckoutTotal(total);
     setShowTipModal(true);
+  };
+
+  // ----- Pre-Authorization handlers -----
+  const handleOpenPreAuth = () => {
+    if (activeHold) {
+      toast.info(`Active pre-auth of $${activeHold.amount.toFixed(2)} already on file.`);
+      return;
+    }
+    setShowPreAuthAmount(true);
+  };
+
+  const handlePreAuthAmountConfirm = (amount: number) => {
+    setPreAuthAmount(amount);
+    setShowPreAuthAmount(false);
+    setShowPreAuthCard(true);
+  };
+
+  const handlePreAuthAuthorized = (cardLast4: string, authCode: string) => {
+    const hold = {
+      id: `PA-${Date.now().toString(36).toUpperCase()}`,
+      amount: preAuthAmount,
+      cardLast4,
+      authCode,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setHold(hold);
+    setShowPreAuthCard(false);
+    setShowPreAuthSuccess(true);
+  };
+
+  const handlePreAuthSuccessClose = () => {
+    setShowPreAuthSuccess(false);
+    setPreAuthAmount(0);
+  };
+
+  const handleVoidConfirm = () => {
+    voidHold();
+    setShowVoidConfirm(false);
+    toast.success('Pre-authorization voided. Proceeding with cash.');
+    setShowCashModal(true);
+  };
+
+  // Credit completion: if a pre-auth covers it, "release remainder" instead
+  const completeCreditWithPreAuth = () => {
+    if (activeHold) {
+      const remainder = activeHold.amount - (creditCheckoutTotal * 1.08 + currentTipAmount);
+      if (remainder > 0) {
+        toast.success(`Pre-auth settled. $${remainder.toFixed(2)} released back to customer.`);
+      } else {
+        toast.success('Pre-auth settled in full.');
+      }
+      clearHold();
+    }
   };
 
   const handleTipComplete = () => {
