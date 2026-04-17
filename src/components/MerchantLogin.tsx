@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { Store } from 'lucide-react';
+import ClubLogo from '@/components/ClubLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -23,13 +23,13 @@ const MerchantLogin = () => {
     <div className="h-screen flex items-center justify-center bg-background p-4 overflow-hidden">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="flex flex-col items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Store className="w-10 h-10 text-primary" />
-          </div>
+          <ClubLogo size={80} />
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-foreground">Welcome</h1>
-            <p className="text-muted-foreground text-sm">Enter your merchant credentials to continue</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Club Manager
+            </h1>
+            <p className="text-muted-foreground text-sm">Sign in to manage your venue</p>
           </div>
 
           <form onSubmit={handleSubmit} className="w-full space-y-4">

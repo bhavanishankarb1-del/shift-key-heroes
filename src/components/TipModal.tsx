@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2, SplitSquareHorizontal } from 'lucide-react';
+import { CreditCard, SplitSquareHorizontal } from 'lucide-react';
+import FoodDrinkLoader from '@/components/FoodDrinkLoader';
 
 interface TipModalProps {
   open: boolean;
@@ -54,10 +55,7 @@ const TipModal = ({ open, onClose, subtotal, onComplete }: TipModalProps) => {
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-md">
         {processing ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
-            <p className="text-sm text-muted-foreground">Processing credit payment…</p>
-          </div>
+          <FoodDrinkLoader message="Processing credit payment…" />
         ) : (
           <>
             <DialogHeader>
