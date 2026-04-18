@@ -8,7 +8,7 @@ interface TipModalProps {
   open: boolean;
   onClose: () => void;
   subtotal: number;
-  onComplete: () => void;
+  onComplete: (tipAmount?: number) => void;
 }
 
 const TIP_OPTIONS = [
