@@ -34,6 +34,7 @@ interface OpenTab {
   items: CartItem[];
   total: number;
   createdAt: string;
+  preAuth?: PreAuthHold;
 }
 
 const PRODUCTS: Product[] = [
