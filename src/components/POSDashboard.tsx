@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { usePreAuthStore } from '@/store/preAuthStore';
 import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck } from 'lucide-react';
+import { PreAuthHold } from '@/store/preAuthStore';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
@@ -33,6 +34,7 @@ interface OpenTab {
   items: CartItem[];
   total: number;
   createdAt: string;
+  preAuth?: PreAuthHold;
 }
 
 const PRODUCTS: Product[] = [
@@ -85,6 +87,7 @@ const POSDashboard = () => {
   const [preAuthAmount, setPreAuthAmount] = useState(0);
   const [pendingPreAuth, setPendingPreAuth] = useState<{ cardLast4: string; authCode: string } | null>(null);
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
+  const [voidTabId, setVoidTabId] = useState<string | null>(null);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -140,11 +143,6 @@ const POSDashboard = () => {
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
     if (method === 'cash') {
-      // If a pre-auth hold is active on this session, confirm void first
-      if (activeHold) {
-        setShowVoidConfirm(true);
-        return;
-      }
       setShowCashModal(true);
       return;
     }
@@ -177,7 +175,7 @@ const POSDashboard = () => {
 
   const handlePreAuthSignatureConfirm = (_signatureDataUrl: string) => {
     if (!pendingPreAuth) return;
-    const hold = {
+    const hold: PreAuthHold = {
       id: `PA-${Date.now().toString(36).toUpperCase()}`,
       amount: preAuthAmount,
       cardLast4: pendingPreAuth.cardLast4,
@@ -185,6 +183,17 @@ const POSDashboard = () => {
       createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setHold(hold);
+    // Create an open tab representing the pre-authorized hold
+    const newTab: OpenTab = {
+      id: `tab${tabCounter}`,
+      name: `Pre-Auth #${tabCounter}`,
+      items: [],
+      total: preAuthAmount,
+      createdAt: hold.createdAt,
+      preAuth: hold,
+    };
+    setOpenTabs((prev) => [...prev, newTab]);
+    setTabCounter((c) => c + 1);
     setPendingPreAuth(null);
     setShowPreAuthSignature(false);
     setShowPreAuthSuccess(true);
@@ -193,13 +202,17 @@ const POSDashboard = () => {
   const handlePreAuthSuccessClose = () => {
     setShowPreAuthSuccess(false);
     setPreAuthAmount(0);
+    clearHold();
   };
 
   const handleVoidConfirm = () => {
     voidHold();
+    if (voidTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== voidTabId));
+      setVoidTabId(null);
+    }
     setShowVoidConfirm(false);
-    toast.success('Pre-authorization voided. Proceeding with cash.');
-    setShowCashModal(true);
+    toast.success('Pre-authorization voided. Amount released to customer.');
   };
 
   // Credit completion: if a pre-auth covers it, "release remainder" instead
@@ -262,8 +275,13 @@ const POSDashboard = () => {
       setCart([...tab.items]);
       setEditingTabId(tabId);
       setShowOpenTabs(false);
+    } else if (action === 'cash' && tab.preAuth) {
+      // Cash on a pre-auth tab → confirm void first
+      setVoidTabId(tabId);
+      setShowVoidConfirm(true);
     } else {
       setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
+      toast.success(`Tab "${tab.name}" closed.`);
     }
   };
 
@@ -307,12 +325,6 @@ const POSDashboard = () => {
             {item.label}
           </Button>
         ))}
-        {activeHold && (
-          <div className="ml-auto flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Pre-Auth Hold: ${activeHold.amount.toFixed(2)} · ****{activeHold.cardLast4}
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -386,7 +398,14 @@ const POSDashboard = () => {
               {openTabs.map((tab) => (
                 <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm font-semibold text-foreground">{tab.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground">{tab.name}</p>
+                      {tab.preAuth && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary">
+                          <ShieldCheck className="w-3 h-3" /> Pre-Auth
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
                       <DropdownMenu>
@@ -402,22 +421,34 @@ const POSDashboard = () => {
                           <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
                             <CreditCard className="w-4 h-4 mr-2" /> Credit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
-                            <Plus className="w-4 h-4 mr-2" /> Add Items
-                          </DropdownMenuItem>
+                          {!tab.preAuth && (
+                            <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
+                              <Plus className="w-4 h-4 mr-2" /> Add Items
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    {tab.items.map((item) => (
-                      <p key={item.id} className="text-xs text-muted-foreground">
-                        {item.quantity}x {item.name} — ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-                    ))}
-                  </div>
+                  {tab.preAuth ? (
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p>Card: Visa ****{tab.preAuth.cardLast4}</p>
+                      <p>Auth Code: {tab.preAuth.authCode}</p>
+                      <p>Ref: {tab.preAuth.id}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {tab.items.map((item) => (
+                        <p key={item.id} className="text-xs text-muted-foreground">
+                          {item.quantity}x {item.name} — ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pt-1 border-t border-border/50">
-                    <span className="text-xs font-medium text-foreground">Total</span>
+                    <span className="text-xs font-medium text-foreground">
+                      {tab.preAuth ? 'Amount Held' : 'Total'}
+                    </span>
                     <span className="text-sm font-bold text-primary">${tab.total.toFixed(2)}</span>
                   </div>
                 </div>
