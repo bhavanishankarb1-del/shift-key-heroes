@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { usePreAuthStore } from '@/store/preAuthStore';
 import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck } from 'lucide-react';
+import { PreAuthHold } from '@/store/preAuthStore';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CashReceivedModal from '@/components/CashReceivedModal';
