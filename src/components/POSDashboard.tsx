@@ -354,6 +354,7 @@ const POSDashboard = () => {
             className="gap-1.5 text-xs"
             onClick={() => {
               if (item.label === 'Pre-Authorization') handleOpenPreAuth();
+              else if (item.label === 'Quick Sale') setShowQuickSaleAmount(true);
             }}
           >
             <item.icon className="w-3.5 h-3.5" />
