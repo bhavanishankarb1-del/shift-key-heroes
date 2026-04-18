@@ -327,6 +327,20 @@ const POSDashboard = () => {
             {item.label}
           </Button>
         ))}
+        <Button
+          variant={showOpenTabs ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5 text-xs ml-auto"
+          onClick={() => setShowOpenTabs((v) => !v)}
+        >
+          <List className="w-3.5 h-3.5" />
+          See Open Tabs
+          {openTabs.length > 0 && (
+            <span className="ml-1 px-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">
+              {openTabs.length}
+            </span>
+          )}
+        </Button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
