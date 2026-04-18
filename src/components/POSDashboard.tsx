@@ -17,6 +17,8 @@ import PreAuthCardModal from '@/components/PreAuthCardModal';
 import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
 import PreAuthSignatureModal from '@/components/PreAuthSignatureModal';
 import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
+import QuickSaleAmountModal from '@/components/QuickSaleAmountModal';
+import QuickSaleSuccessModal from '@/components/QuickSaleSuccessModal';
 import { toast } from 'sonner';
 interface Product {
   id: string;
