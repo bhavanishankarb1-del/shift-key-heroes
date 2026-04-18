@@ -275,8 +275,13 @@ const POSDashboard = () => {
       setCart([...tab.items]);
       setEditingTabId(tabId);
       setShowOpenTabs(false);
+    } else if (action === 'cash' && tab.preAuth) {
+      // Cash on a pre-auth tab → confirm void first
+      setVoidTabId(tabId);
+      setShowVoidConfirm(true);
     } else {
       setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
+      toast.success(`Tab "${tab.name}" closed.`);
     }
   };
 
