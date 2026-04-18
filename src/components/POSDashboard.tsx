@@ -660,6 +660,41 @@ const POSDashboard = () => {
         onCancel={() => setShowVoidConfirm(false)}
         onConfirm={handleVoidConfirm}
       />
+
+      {/* Quick Sale flow */}
+      <QuickSaleAmountModal
+        open={showQuickSaleAmount}
+        onCancel={() => setShowQuickSaleAmount(false)}
+        onConfirm={(amount) => {
+          setQuickSaleAmount(amount);
+          setShowQuickSaleAmount(false);
+          setShowQuickSaleTip(true);
+        }}
+      />
+      <TipModal
+        open={showQuickSaleTip}
+        onClose={() => {
+          setShowQuickSaleTip(false);
+          setQuickSaleAmount(0);
+        }}
+        subtotal={quickSaleAmount}
+        onComplete={() => {
+          // TipModal handles its own loader during processing.
+          setShowQuickSaleTip(false);
+          setShowQuickSaleSuccess(true);
+        }}
+      />
+      <QuickSaleSuccessModal
+        open={showQuickSaleSuccess}
+        amount={quickSaleAmount}
+        tipAmount={quickSaleTipAmount}
+        onClose={() => {
+          setShowQuickSaleSuccess(false);
+          setQuickSaleAmount(0);
+          setQuickSaleTipAmount(0);
+          toast.success('Quick sale completed.');
+        }}
+      />
     </div>
   );
 };
