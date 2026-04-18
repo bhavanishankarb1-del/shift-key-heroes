@@ -550,6 +550,11 @@ const POSDashboard = () => {
         onClose={() => setShowPreAuthCard(false)}
         onAuthorized={handlePreAuthAuthorized}
       />
+      <PreAuthSignatureModal
+        open={showPreAuthSignature}
+        amount={preAuthAmount}
+        onConfirm={handlePreAuthSignatureConfirm}
+      />
       <PreAuthSuccessModal
         open={showPreAuthSuccess}
         hold={activeHold}
