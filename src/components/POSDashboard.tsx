@@ -325,12 +325,6 @@ const POSDashboard = () => {
             {item.label}
           </Button>
         ))}
-        {activeHold && (
-          <div className="ml-auto flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Pre-Auth Hold: ${activeHold.amount.toFixed(2)} · ****{activeHold.cardLast4}
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
