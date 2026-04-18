@@ -398,7 +398,14 @@ const POSDashboard = () => {
               {openTabs.map((tab) => (
                 <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm font-semibold text-foreground">{tab.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground">{tab.name}</p>
+                      {tab.preAuth && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary">
+                          <ShieldCheck className="w-3 h-3" /> Pre-Auth
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
                       <DropdownMenu>
@@ -414,22 +421,34 @@ const POSDashboard = () => {
                           <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
                             <CreditCard className="w-4 h-4 mr-2" /> Credit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
-                            <Plus className="w-4 h-4 mr-2" /> Add Items
-                          </DropdownMenuItem>
+                          {!tab.preAuth && (
+                            <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
+                              <Plus className="w-4 h-4 mr-2" /> Add Items
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    {tab.items.map((item) => (
-                      <p key={item.id} className="text-xs text-muted-foreground">
-                        {item.quantity}x {item.name} — ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-                    ))}
-                  </div>
+                  {tab.preAuth ? (
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p>Card: Visa ****{tab.preAuth.cardLast4}</p>
+                      <p>Auth Code: {tab.preAuth.authCode}</p>
+                      <p>Ref: {tab.preAuth.id}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {tab.items.map((item) => (
+                        <p key={item.id} className="text-xs text-muted-foreground">
+                          {item.quantity}x {item.name} — ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pt-1 border-t border-border/50">
-                    <span className="text-xs font-medium text-foreground">Total</span>
+                    <span className="text-xs font-medium text-foreground">
+                      {tab.preAuth ? 'Amount Held' : 'Total'}
+                    </span>
                     <span className="text-sm font-bold text-primary">${tab.total.toFixed(2)}</span>
                   </div>
                 </div>
