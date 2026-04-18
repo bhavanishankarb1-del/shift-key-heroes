@@ -678,8 +678,8 @@ const POSDashboard = () => {
           setQuickSaleAmount(0);
         }}
         subtotal={quickSaleAmount}
-        onComplete={() => {
-          // TipModal handles its own loader during processing.
+        onComplete={(tip) => {
+          setQuickSaleTipAmount(tip ?? 0);
           setShowQuickSaleTip(false);
           setShowQuickSaleSuccess(true);
         }}
