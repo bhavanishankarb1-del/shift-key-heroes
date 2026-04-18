@@ -273,17 +273,41 @@ const POSDashboard = () => {
   const handleTabAction = (tabId: string, action: 'cash' | 'credit' | 'add-items') => {
     const tab = openTabs.find((t) => t.id === tabId);
     if (!tab) return;
+
     if (action === 'add-items') {
       setCart([...tab.items]);
       setEditingTabId(tabId);
       setShowOpenTabs(false);
-    } else if (action === 'cash' && tab.preAuth) {
-      // Cash on a pre-auth tab → confirm void first
+      return;
+    }
+
+    // For pre-auth tabs paying with cash → confirm void first
+    if (action === 'cash' && tab.preAuth) {
       setVoidTabId(tabId);
+      // also restore hold context so void modal shows the right info
+      setHold(tab.preAuth);
       setShowVoidConfirm(true);
+      return;
+    }
+
+    // Otherwise route through the normal Cash / Credit checkout flows.
+    const tabSubtotal = tab.preAuth
+      ? tab.items.reduce((s, i) => s + i.price * i.quantity, 0)
+      : tab.total;
+
+    setEditingTabId(tabId);
+    setCart([...tab.items]);
+    setShowOpenTabs(false);
+
+    if (action === 'cash') {
+      // Use the cart-based cash modal; ensure cart is set above so completeCheckout removes the tab.
+      setShowCashModal(true);
     } else {
-      setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
-      toast.success(`Tab "${tab.name}" closed.`);
+      // Credit flow: if pre-auth, restore hold so completeCreditWithPreAuth settles it.
+      if (tab.preAuth) setHold(tab.preAuth);
+      setCreditCheckoutItems([...tab.items]);
+      setCreditCheckoutTotal(tabSubtotal);
+      setShowTipModal(true);
     }
   };
 
