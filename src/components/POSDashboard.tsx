@@ -12,6 +12,7 @@ import DatafileModal from '@/components/DatafileModal';
 import PreAuthAmountModal from '@/components/PreAuthAmountModal';
 import PreAuthCardModal from '@/components/PreAuthCardModal';
 import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
+import PreAuthSignatureModal from '@/components/PreAuthSignatureModal';
 import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
 import { toast } from 'sonner';
 interface Product {
