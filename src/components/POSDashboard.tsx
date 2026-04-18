@@ -143,11 +143,6 @@ const POSDashboard = () => {
   const handleCheckout = (method: 'cash' | 'credit') => {
     if (cart.length === 0) return;
     if (method === 'cash') {
-      // If a pre-auth hold is active on this session, confirm void first
-      if (activeHold) {
-        setShowVoidConfirm(true);
-        return;
-      }
       setShowCashModal(true);
       return;
     }
