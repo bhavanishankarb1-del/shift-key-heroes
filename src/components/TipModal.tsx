@@ -8,7 +8,7 @@ interface TipModalProps {
   open: boolean;
   onClose: () => void;
   subtotal: number;
-  onComplete: () => void;
+  onComplete: (tipAmount?: number) => void;
 }
 
 const TIP_OPTIONS = [
@@ -41,7 +41,7 @@ const TipModal = ({ open, onClose, subtotal, onComplete }: TipModalProps) => {
     setProcessing(true);
     await new Promise((r) => setTimeout(r, 2000));
     setProcessing(false);
-    onComplete();
+    onComplete(tipAmount);
   };
 
   const handleClose = () => {

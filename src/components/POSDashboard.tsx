@@ -17,6 +17,8 @@ import PreAuthCardModal from '@/components/PreAuthCardModal';
 import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
 import PreAuthSignatureModal from '@/components/PreAuthSignatureModal';
 import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
+import QuickSaleAmountModal from '@/components/QuickSaleAmountModal';
+import QuickSaleSuccessModal from '@/components/QuickSaleSuccessModal';
 import { toast } from 'sonner';
 interface Product {
   id: string;
@@ -90,6 +92,13 @@ const POSDashboard = () => {
   const [pendingPreAuth, setPendingPreAuth] = useState<{ cardLast4: string; authCode: string } | null>(null);
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
   const [voidTabId, setVoidTabId] = useState<string | null>(null);
+
+  // Quick Sale flow state
+  const [showQuickSaleAmount, setShowQuickSaleAmount] = useState(false);
+  const [showQuickSaleTip, setShowQuickSaleTip] = useState(false);
+  const [showQuickSaleSuccess, setShowQuickSaleSuccess] = useState(false);
+  const [quickSaleAmount, setQuickSaleAmount] = useState(0);
+  const [quickSaleTipAmount, setQuickSaleTipAmount] = useState(0);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
@@ -345,6 +354,7 @@ const POSDashboard = () => {
             className="gap-1.5 text-xs"
             onClick={() => {
               if (item.label === 'Pre-Authorization') handleOpenPreAuth();
+              else if (item.label === 'Quick Sale') setShowQuickSaleAmount(true);
             }}
           >
             <item.icon className="w-3.5 h-3.5" />
@@ -649,6 +659,41 @@ const POSDashboard = () => {
         hold={activeHold}
         onCancel={() => setShowVoidConfirm(false)}
         onConfirm={handleVoidConfirm}
+      />
+
+      {/* Quick Sale flow */}
+      <QuickSaleAmountModal
+        open={showQuickSaleAmount}
+        onCancel={() => setShowQuickSaleAmount(false)}
+        onConfirm={(amount) => {
+          setQuickSaleAmount(amount);
+          setShowQuickSaleAmount(false);
+          setShowQuickSaleTip(true);
+        }}
+      />
+      <TipModal
+        open={showQuickSaleTip}
+        onClose={() => {
+          setShowQuickSaleTip(false);
+          setQuickSaleAmount(0);
+        }}
+        subtotal={quickSaleAmount}
+        onComplete={(tip) => {
+          setQuickSaleTipAmount(tip ?? 0);
+          setShowQuickSaleTip(false);
+          setShowQuickSaleSuccess(true);
+        }}
+      />
+      <QuickSaleSuccessModal
+        open={showQuickSaleSuccess}
+        amount={quickSaleAmount}
+        tipAmount={quickSaleTipAmount}
+        onClose={() => {
+          setShowQuickSaleSuccess(false);
+          setQuickSaleAmount(0);
+          setQuickSaleTipAmount(0);
+          toast.success('Quick sale completed.');
+        }}
       />
     </div>
   );
