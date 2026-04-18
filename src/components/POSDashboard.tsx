@@ -87,6 +87,7 @@ const POSDashboard = () => {
   const [preAuthAmount, setPreAuthAmount] = useState(0);
   const [pendingPreAuth, setPendingPreAuth] = useState<{ cardLast4: string; authCode: string } | null>(null);
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
+  const [voidTabId, setVoidTabId] = useState<string | null>(null);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
