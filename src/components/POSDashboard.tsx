@@ -179,7 +179,7 @@ const POSDashboard = () => {
 
   const handlePreAuthSignatureConfirm = (_signatureDataUrl: string) => {
     if (!pendingPreAuth) return;
-    const hold = {
+    const hold: PreAuthHold = {
       id: `PA-${Date.now().toString(36).toUpperCase()}`,
       amount: preAuthAmount,
       cardLast4: pendingPreAuth.cardLast4,
@@ -187,6 +187,17 @@ const POSDashboard = () => {
       createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setHold(hold);
+    // Create an open tab representing the pre-authorized hold
+    const newTab: OpenTab = {
+      id: `tab${tabCounter}`,
+      name: `Pre-Auth #${tabCounter}`,
+      items: [],
+      total: preAuthAmount,
+      createdAt: hold.createdAt,
+      preAuth: hold,
+    };
+    setOpenTabs((prev) => [...prev, newTab]);
+    setTabCounter((c) => c + 1);
     setPendingPreAuth(null);
     setShowPreAuthSignature(false);
     setShowPreAuthSuccess(true);
@@ -195,13 +206,17 @@ const POSDashboard = () => {
   const handlePreAuthSuccessClose = () => {
     setShowPreAuthSuccess(false);
     setPreAuthAmount(0);
+    clearHold();
   };
 
   const handleVoidConfirm = () => {
     voidHold();
+    if (voidTabId) {
+      setOpenTabs((prev) => prev.filter((t) => t.id !== voidTabId));
+      setVoidTabId(null);
+    }
     setShowVoidConfirm(false);
-    toast.success('Pre-authorization voided. Proceeding with cash.');
-    setShowCashModal(true);
+    toast.success('Pre-authorization voided. Amount released to customer.');
   };
 
   // Credit completion: if a pre-auth covers it, "release remainder" instead
