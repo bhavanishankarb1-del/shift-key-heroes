@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { usePreAuthStore } from '@/store/preAuthStore';
-import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck } from 'lucide-react';
+import { LogOut, Plus, Minus, Trash2, ShoppingBag, Search, CreditCard, Zap, Database, List, Banknote, ChevronDown, ShieldCheck, X } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { PreAuthHold } from '@/store/preAuthStore';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -271,17 +273,41 @@ const POSDashboard = () => {
   const handleTabAction = (tabId: string, action: 'cash' | 'credit' | 'add-items') => {
     const tab = openTabs.find((t) => t.id === tabId);
     if (!tab) return;
+
     if (action === 'add-items') {
       setCart([...tab.items]);
       setEditingTabId(tabId);
       setShowOpenTabs(false);
-    } else if (action === 'cash' && tab.preAuth) {
-      // Cash on a pre-auth tab → confirm void first
+      return;
+    }
+
+    // For pre-auth tabs paying with cash → confirm void first
+    if (action === 'cash' && tab.preAuth) {
       setVoidTabId(tabId);
+      // also restore hold context so void modal shows the right info
+      setHold(tab.preAuth);
       setShowVoidConfirm(true);
+      return;
+    }
+
+    // Otherwise route through the normal Cash / Credit checkout flows.
+    const tabSubtotal = tab.preAuth
+      ? tab.items.reduce((s, i) => s + i.price * i.quantity, 0)
+      : tab.total;
+
+    setEditingTabId(tabId);
+    setCart([...tab.items]);
+    setShowOpenTabs(false);
+
+    if (action === 'cash') {
+      // Use the cart-based cash modal; ensure cart is set above so completeCheckout removes the tab.
+      setShowCashModal(true);
     } else {
-      setOpenTabs((prev) => prev.filter((t) => t.id !== tabId));
-      toast.success(`Tab "${tab.name}" closed.`);
+      // Credit flow: if pre-auth, restore hold so completeCreditWithPreAuth settles it.
+      if (tab.preAuth) setHold(tab.preAuth);
+      setCreditCheckoutItems([...tab.items]);
+      setCreditCheckoutTotal(tabSubtotal);
+      setShowTipModal(true);
     }
   };
 
@@ -325,6 +351,20 @@ const POSDashboard = () => {
             {item.label}
           </Button>
         ))}
+        <Button
+          variant={showOpenTabs ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5 text-xs ml-auto"
+          onClick={() => setShowOpenTabs((v) => !v)}
+        >
+          <List className="w-3.5 h-3.5" />
+          See Open Tabs
+          {openTabs.length > 0 && (
+            <span className="ml-1 px-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">
+              {openTabs.length}
+            </span>
+          )}
+        </Button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -376,167 +416,180 @@ const POSDashboard = () => {
           </div>
         </div>
 
-        {/* Right sidebar */}
+        {/* Right sidebar - Cart only */}
         <div className="w-72 lg:w-80 border-l border-border bg-card flex flex-col">
-          {/* Toggle: Cart / Open Tabs */}
-          <div className="p-3 border-b border-border">
-            <Button
-              variant={showOpenTabs ? 'default' : 'outline'}
-              size="sm"
-              className="w-full gap-2"
-              onClick={() => setShowOpenTabs(!showOpenTabs)}
-            >
-              <List className="w-4 h-4" />
-              {showOpenTabs ? 'Back to Cart' : 'See Open Tabs'}
-            </Button>
+          <div className="p-4 border-b border-border">
+            <h2 className="text-lg font-bold text-foreground">
+              {editingTabId
+                ? `Editing: ${openTabs.find((t) => t.id === editingTabId)?.name}`
+                : 'Cart'}{' '}
+              {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
+            </h2>
+            {editingTabId && (
+              <button
+                onClick={() => { setEditingTabId(null); setCart([]); }}
+                className="text-xs text-muted-foreground hover:text-foreground mt-1"
+              >
+                Cancel editing
+              </button>
+            )}
           </div>
 
-          {showOpenTabs ? (
-            /* Open Tabs Panel */
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <h2 className="text-lg font-bold text-foreground mb-2">Open Tabs</h2>
-              {openTabs.map((tab) => (
-                <div key={tab.id} className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-foreground">{tab.name}</p>
-                      {tab.preAuth && (
-                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary">
-                          <ShieldCheck className="w-3 h-3" /> Pre-Auth
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{tab.createdAt}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                            <ChevronDown className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'cash')}>
-                            <Banknote className="w-4 h-4 mr-2" /> Cash
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
-                            <CreditCard className="w-4 h-4 mr-2" /> Credit
-                          </DropdownMenuItem>
-                          {!tab.preAuth && (
-                            <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'add-items')}>
-                              <Plus className="w-4 h-4 mr-2" /> Add Items
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {cart.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center mt-8">Cart is empty</p>
+            ) : (
+              cart.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+                  <span className="text-xl">{item.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                  {tab.preAuth ? (
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <p>Card: Visa ****{tab.preAuth.cardLast4}</p>
-                      <p>Auth Code: {tab.preAuth.authCode}</p>
-                      <p>Ref: {tab.preAuth.id}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {tab.items.map((item) => (
-                        <p key={item.id} className="text-xs text-muted-foreground">
-                          {item.quantity}x {item.name} — ${(item.price * item.quantity).toFixed(2)}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center pt-1 border-t border-border/50">
-                    <span className="text-xs font-medium text-foreground">
-                      {tab.preAuth ? 'Amount Held' : 'Total'}
-                    </span>
-                    <span className="text-sm font-bold text-primary">${tab.total.toFixed(2)}</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-accent transition-colors">
+                      {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-destructive" /> : <Minus className="w-3 h-3 text-foreground" />}
+                    </button>
+                    <span className="w-6 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-accent transition-colors">
+                      <Plus className="w-3 h-3 text-foreground" />
+                    </button>
                   </div>
                 </div>
-              ))}
-              {openTabs.length === 0 && (
-                <p className="text-muted-foreground text-sm text-center mt-8">No open tabs</p>
-              )}
+              ))
+            )}
+          </div>
+
+          <div className="p-4 border-t border-border space-y-3">
+            <div className="flex justify-between text-lg font-bold">
+              <span className="text-foreground">Total</span>
+              <span className="text-primary">${total.toFixed(2)}</span>
             </div>
-          ) : (
-            /* Cart Panel */
-            <>
-              <div className="p-4 border-b border-border">
-                <h2 className="text-lg font-bold text-foreground">
-                  {editingTabId
-                    ? `Editing: ${openTabs.find((t) => t.id === editingTabId)?.name}`
-                    : 'Cart'}{' '}
-                  {itemCount > 0 && <span className="text-primary">({itemCount})</span>}
-                </h2>
-                {editingTabId && (
-                  <button
-                    onClick={() => { setEditingTabId(null); setCart([]); }}
-                    className="text-xs text-muted-foreground hover:text-foreground mt-1"
-                  >
-                    Cancel editing
-                  </button>
-                )}
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {cart.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center mt-8">Cart is empty</p>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-                      <span className="text-xl">{item.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-accent transition-colors">
-                          {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-destructive" /> : <Minus className="w-3 h-3 text-foreground" />}
-                        </button>
-                        <span className="w-6 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
-                        <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-accent transition-colors">
-                          <Plus className="w-3 h-3 text-foreground" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="p-4 border-t border-border space-y-3">
-                <div className="flex justify-between text-lg font-bold">
-                  <span className="text-foreground">Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleCheckout('cash')}
-                    disabled={cart.length === 0}
-                    variant="outline"
-                    className="flex-1 h-12 gap-2 font-bold"
-                  >
-                    <Banknote className="w-5 h-5" /> Cash
-                  </Button>
-                  <Button
-                    onClick={() => handleCheckout('credit')}
-                    disabled={cart.length === 0}
-                    className="flex-1 h-12 gap-2 font-bold"
-                  >
-                    <CreditCard className="w-5 h-5" /> Credit
-                  </Button>
-                </div>
-                <Button
-                  onClick={handleNewOrder}
-                  disabled={cart.length === 0}
-                  variant="secondary"
-                  className="w-full h-10 gap-2 font-medium"
-                >
-                  <Plus className="w-4 h-4" /> {editingTabId ? 'Update Tab' : 'New Order'}
-                </Button>
-              </div>
-            </>
-          )}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleCheckout('cash')}
+                disabled={cart.length === 0}
+                variant="outline"
+                className="flex-1 h-12 gap-2 font-bold"
+              >
+                <Banknote className="w-5 h-5" /> Cash
+              </Button>
+              <Button
+                onClick={() => handleCheckout('credit')}
+                disabled={cart.length === 0}
+                className="flex-1 h-12 gap-2 font-bold"
+              >
+                <CreditCard className="w-5 h-5" /> Credit
+              </Button>
+            </div>
+            <Button
+              onClick={handleNewOrder}
+              disabled={cart.length === 0}
+              variant="secondary"
+              className="w-full h-10 gap-2 font-medium"
+            >
+              <Plus className="w-4 h-4" /> {editingTabId ? 'Update Tab' : 'New Order'}
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Full-screen Open Tabs overlay */}
+      {showOpenTabs && (
+        <div className="absolute inset-x-0 bottom-0 top-[113px] bg-background z-40 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <List className="w-5 h-5 text-primary" /> Open Tabs
+              <span className="text-sm font-normal text-muted-foreground">({openTabs.length})</span>
+            </h2>
+            <Button variant="ghost" size="sm" onClick={() => setShowOpenTabs(false)} className="gap-1">
+              <X className="w-4 h-4" /> Close
+            </Button>
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            {openTabs.length === 0 ? (
+              <p className="text-center text-muted-foreground mt-12">No open tabs</p>
+            ) : (
+              <div className="rounded-lg border border-border bg-card overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Card No.</TableHead>
+                      <TableHead>Tab Name</TableHead>
+                      <TableHead className="text-right">Tab Amount</TableHead>
+                      <TableHead className="text-right">Pre-Auth Amount</TableHead>
+                      <TableHead>Order Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {openTabs.map((tab) => {
+                      const tabAmount = tab.preAuth ? tab.items.reduce((s, i) => s + i.price * i.quantity, 0) : tab.total;
+                      const status = tab.preAuth
+                        ? (tab.items.length > 0 ? 'Pre-Auth + Items' : 'Pre-Auth Hold')
+                        : 'Open';
+                      return (
+                        <TableRow key={tab.id}>
+                          <TableCell className="font-mono text-xs">
+                            {tab.preAuth ? `Visa ****${tab.preAuth.cardLast4}` : '—'}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {tab.name}
+                              {tab.preAuth && (
+                                <Badge variant="secondary" className="gap-1">
+                                  <ShieldCheck className="w-3 h-3" /> Pre-Auth
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tab.createdAt}</p>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            ${tabAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-primary">
+                            {tab.preAuth ? `$${tab.preAuth.amount.toFixed(2)}` : '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={tab.preAuth ? 'default' : 'outline'}>{status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleTabAction(tab.id, 'add-items')}
+                                className="gap-1"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add Items
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="destructive" size="sm" className="gap-1">
+                                    Close Tab <ChevronDown className="w-3.5 h-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'cash')}>
+                                    <Banknote className="w-4 h-4 mr-2" /> Cash
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleTabAction(tab.id, 'credit')}>
+                                    <CreditCard className="w-4 h-4 mr-2" /> Credit
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <CashReceivedModal
         open={showCashModal}
         onClose={() => setShowCashModal(false)}
