@@ -93,6 +93,13 @@ const POSDashboard = () => {
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
   const [voidTabId, setVoidTabId] = useState<string | null>(null);
 
+  // Quick Sale flow state
+  const [showQuickSaleAmount, setShowQuickSaleAmount] = useState(false);
+  const [showQuickSaleTip, setShowQuickSaleTip] = useState(false);
+  const [showQuickSaleSuccess, setShowQuickSaleSuccess] = useState(false);
+  const [quickSaleAmount, setQuickSaleAmount] = useState(0);
+  const [quickSaleTipAmount, setQuickSaleTipAmount] = useState(0);
+
   const filtered = PRODUCTS.filter((p) => {
     const matchCat = category === 'All' || p.category === category;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
