@@ -12,6 +12,7 @@ import DatafileModal from '@/components/DatafileModal';
 import PreAuthAmountModal from '@/components/PreAuthAmountModal';
 import PreAuthCardModal from '@/components/PreAuthCardModal';
 import PreAuthSuccessModal from '@/components/PreAuthSuccessModal';
+import PreAuthSignatureModal from '@/components/PreAuthSignatureModal';
 import VoidPreAuthConfirmModal from '@/components/VoidPreAuthConfirmModal';
 import { toast } from 'sonner';
 interface Product {
@@ -79,8 +80,10 @@ const POSDashboard = () => {
   // Pre-Authorization flow state
   const [showPreAuthAmount, setShowPreAuthAmount] = useState(false);
   const [showPreAuthCard, setShowPreAuthCard] = useState(false);
+  const [showPreAuthSignature, setShowPreAuthSignature] = useState(false);
   const [showPreAuthSuccess, setShowPreAuthSuccess] = useState(false);
   const [preAuthAmount, setPreAuthAmount] = useState(0);
+  const [pendingPreAuth, setPendingPreAuth] = useState<{ cardLast4: string; authCode: string } | null>(null);
   const [showVoidConfirm, setShowVoidConfirm] = useState(false);
 
   const filtered = PRODUCTS.filter((p) => {
@@ -167,15 +170,23 @@ const POSDashboard = () => {
   };
 
   const handlePreAuthAuthorized = (cardLast4: string, authCode: string) => {
+    setPendingPreAuth({ cardLast4, authCode });
+    setShowPreAuthCard(false);
+    setShowPreAuthSignature(true);
+  };
+
+  const handlePreAuthSignatureConfirm = (_signatureDataUrl: string) => {
+    if (!pendingPreAuth) return;
     const hold = {
       id: `PA-${Date.now().toString(36).toUpperCase()}`,
       amount: preAuthAmount,
-      cardLast4,
-      authCode,
+      cardLast4: pendingPreAuth.cardLast4,
+      authCode: pendingPreAuth.authCode,
       createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setHold(hold);
-    setShowPreAuthCard(false);
+    setPendingPreAuth(null);
+    setShowPreAuthSignature(false);
     setShowPreAuthSuccess(true);
   };
 
@@ -538,6 +549,11 @@ const POSDashboard = () => {
         amount={preAuthAmount}
         onClose={() => setShowPreAuthCard(false)}
         onAuthorized={handlePreAuthAuthorized}
+      />
+      <PreAuthSignatureModal
+        open={showPreAuthSignature}
+        amount={preAuthAmount}
+        onConfirm={handlePreAuthSignatureConfirm}
       />
       <PreAuthSuccessModal
         open={showPreAuthSuccess}
